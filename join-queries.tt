@@ -1,0 +1,73 @@
+1. Selezionare tutti gli studenti iscritti al Corso di Laurea in Economia
+
+    SELECT A.*
+    FROM mysql.students AS A
+    INNER JOIN mysql.degrees AS B
+    ON A.`degree_id` = B.`id`
+    WHERE B.`name` = 'Corso di Laurea in Economia';
+
+2. Selezionare tutti i Corsi di Laurea Magistrale del Dipartimento di Neuroscienze
+
+    SELECT A.*
+    FROM mysql.degrees as A
+    INNER JOIN mysql.departments AS B
+    ON A.`department_id` = B.`id` 
+    WHERE A.`level` = 'magistrale'
+    AND B.`name` = 'Dipartimento di Neuroscienze';
+
+3. Selezionare tutti i corsi in cui insegna Fulvio Amato (id=44)
+
+    SELECT A.*
+    FROM mysql.courses AS A 
+    INNER JOIN mysql.course_teacher AS B
+    ON A.`id` = B.`course_id` 
+    WHERE B.`teacher_id` = 44;
+
+4. Selezionare tutti gli studenti con i dati relativi al corso di laurea a cui sono iscritti e il relativo dipartimento, in ordine alfabetico per cognome e nome
+
+    SELECT A.*, B.`name` AS `degree_name`, B.`level` AS `degree_level`, C.`name` as `department_name`
+    FROM mysql.students AS A
+    LEFT JOIN mysql.degrees AS B
+    ON A.`degree_id` = B.`id`
+    LEFT JOIN mysql.departments AS C 
+    ON B.`department_id` = C.`id`
+    ORDER BY A.`surname`, A.`name` ASC;
+
+5. Selezionare tutti i corsi di laurea con i relativi corsi e insegnanti
+
+    SELECT A.`name` AS `degree_name`, A.`level` AS `degree_level`, B.`name` AS `course_name`, CONCAT(C.`name`, ' ', C.`surname`) AS `course_teacher`
+    FROM mysql.degrees AS A
+    LEFT JOIN mysql.courses AS B
+    ON A.`id` = B.`degree_id`
+    LEFT JOIN mysql.course_teacher AS join_table
+    ON B.`id` = join_table.`course_id`
+    LEFT JOIN mysql.teachers AS C
+    ON join_table.`teacher_id` = C.`id`
+
+6. Selezionare tutti i docenti che insegnano nel Dipartimento di Matematica (54)
+
+    SELECT DISTINCT A.`name` AS `teacher_name`, A.`surname` AS `teacher_surname`, A.`phone` AS `teacher_phone`, A.`email` AS `teacher_email`, E.`name` AS `department_name`
+    FROM `teachers` AS A
+    INNER JOIN `course_teacher`AS B
+    ON A.`id` = B.`teacher_id`
+    INNER JOIN `courses` AS C
+    ON B.`course_id` = C.`id`
+    INNER JOIN `degrees` AS D
+    ON C.`degree_id`= D.`id`
+    INNER JOIN `departments` AS E
+    ON D.`department_id` = E.`id`
+    WHERE E.`name` = 'Dipartimento di Matematica';
+
+7. BONUS: Selezionare per ogni studente quanti tentativi d’esame ha sostenuto per superare ciascuno dei suoi esami
+
+    SELECT A.`name` AS `student_name`, A.`surname` AS `student_surname`, C.`name` AS `course_name`, COUNT(join_table.`exam_id`) AS `exam_tries` 
+    FROM mysql.students AS A 
+    LEFT JOIN mysql.exam_student AS join_table 
+    ON A.`id` = join_table.`student_id` 
+    LEFT JOIN mysql.exams AS B 
+    ON join_table.`exam_id` = B.`id` 
+    LEFT JOIN mysql.courses AS C 
+    ON B.`course_id` = C.`id` 
+    GROUP BY A.`name`, A.`surname`, C.`name` 
+    ORDER BY A.`surname`, A.`name` ASC;
+
